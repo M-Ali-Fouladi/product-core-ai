@@ -7,8 +7,8 @@ class ProductRepository:
     def create(self, db: Session, data):
         product = Product(**data)
         db.add(product)
-        db.commit()
-        db.refresh(product)
+        #db.commit()
+        #db.refresh(product)
         return product
 
     def get(self, db: Session, product_id: int):

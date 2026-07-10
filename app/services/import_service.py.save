@@ -54,10 +54,8 @@ class ImportService:
     if not product_data.brand:
         return None
 
-    #brand = self.brand_repo.get_by_name(product_data.brand)
-    slug = slugify(product_data.brand)
-    brand = self.brand_repo.get_by_slug(slug)
-   
+    brand = self.brand_repo.get_by_name(product_data.brand)
+
     if brand:
         return brand
 
@@ -73,9 +71,8 @@ class ImportService:
     if not product_data.category:
         return None
 
-    #category = self.category_repo.get_by_name(product_data.category)
-    slug = slugify(product_data.category)
-    category = self.category_repo.get_by_slug(slug)
+    category = self.category_repo.get_by_name(product_data.category)
+
     if category:
         return category
 
