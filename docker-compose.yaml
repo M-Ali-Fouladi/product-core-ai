@@ -11,7 +11,7 @@ services:
     volumes:
       - ./postgres:/var/lib/postgresql/data
     ports:
-      - "5433:5432"
+      - "5432:5432"
 
   redis:
     image: redis:7
@@ -23,8 +23,21 @@ services:
     ports:
       - "6379:6379"
   api:
-    build: ./app
+    build: .
     container_name: kalavofor-api
     restart: always
     ports:
       - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+  worker:
+    build: .
+    container_name: kalavofor-worker
+    command: celery -A app.workers.celery_app worker --loglevel=info
+    depends_on:
+      - redis
+      - postgres
+    restart: always
