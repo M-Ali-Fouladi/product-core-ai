@@ -1,27 +1,19 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter
 
-from app.database.session import get_db
-from app.importers.factory import ImportFactory
-from app.services.import_service import ImportService
+from app.workers.import_tasks import import_product_task
 
 router = APIRouter()
 
 
 @router.post("/imports/mock")
-def import_mock(db: Session = Depends(get_db)):
+def import_mock():
 
-    importer = ImportFactory.get_importer("mock")
-
-    product_data = importer.import_product(
+    import_product_task.delay(
+        "mock",
         "https://mock.com/product/1"
     )
 
-    service = ImportService(db)
-
-    product = service.import_product(product_data)
-
     return {
-        "id": product.id,
-        "title": product.title,
+        "status": "queued",
+        "message": "Import job has been queued."
     }
