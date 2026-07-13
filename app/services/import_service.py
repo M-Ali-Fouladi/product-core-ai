@@ -67,7 +67,7 @@ class ImportService:
     )
 
     return brand
-    
+
     def _get_or_create_category(self, product_data):
 
     if not product_data.category:
@@ -85,3 +85,47 @@ class ImportService:
     )
 
     return category
+
+    def _get_store(self, product_data):
+      store = self.store_repo.get_by_slug(product_data.store)
+      if not store:
+            raise ValueError(f"Store '{product_data.store}' not found.")
+      return store
+
+    def get_by_slug(self, slug: str):
+      return (self.db.query(Store).filter(Store.slug == slug).first())
+
+    def _create_product(self,product_data,brand,category):
+
+    product = self.product_repo.create(
+        title=product_data.title,
+        slug=slugify(product_data.title),
+        brand_id=brand.id if brand else None,
+        category_id=category.id if category else None,
+        image=product_data.image)
+    self.db.flush()
+
+    return product
+    def _create_product_source(self,product,store,product_data):
+
+    source = self.product_source_repo.get_by_store_and_external_id(
+        store.id,
+        product_data.external_id)
+
+    if source:
+        self.product_source_repo.update(
+            source,
+            last_price=product_data.price,
+            currency=product_data.currency,
+            url=product_data.url,
+        )
+        return source
+
+    return self.product_source_repo.create(
+        product_id=product.id,
+        store_id=store.id,
+        external_id=product_data.external_id,
+        url=product_data.url,
+        currency=product_data.currency,
+        last_price=product_data.price,
+    )

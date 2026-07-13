@@ -1,0 +1,88 @@
+from sqlalchemy.orm import Session
+from app.repositories.brand import BrandRepository
+from app.repositories.category import CategoryRepository
+from app.repositories.product import ProductRepository
+from app.repositories.product_source import ProductSourceRepository
+from app.repositories.store import StoreRepository
+from slugify import slugify
+
+class ImportService:
+
+    def __init__(self, db: Session):
+
+        self.db = db
+        self.brand_repo = BrandRepository(db)
+        self.category_repo = CategoryRepository(db)
+        self.product_repo = ProductRepository(db)
+       	self.product_source_repo = ProductSourceRepository(db)
+	self.store_repo = StoreRepository(db)	
+    
+    def import_product(self, product_data):
+
+    try:
+
+        brand = self._get_or_create_brand(product_data)
+
+        category = self._get_or_create_category(product_data)
+
+        store = self._get_store(product_data)
+
+        product = self._create_product(
+            product_data,
+            brand,
+            category,
+        )
+
+        self._create_product_source(
+            product,
+            store,
+            product_data,
+        )
+
+        self.db.commit()
+
+        return product
+
+    except Exception:
+
+        self.db.rollback()
+
+        raise
+
+    def _get_or_create_brand(self, product_data):
+
+    if not product_data.brand:
+        return None
+
+    #brand = self.brand_repo.get_by_name(product_data.brand)
+    slug = slugify(product_data.brand)
+    brand = self.brand_repo.get_by_slug(slug)
+   
+    if brand:
+        return brand
+
+    brand = self.brand_repo.create(
+        name=product_data.brand,
+        slug=slugify(product_data.brand)
+    )
+
+    return brand
+    
+    def _get_or_create_category(self, product_data):
+
+    if not product_data.category:
+        return None
+
+    #category = self.category_repo.get_by_name(product_data.category)
+    slug = slugify(product_data.category)
+    category = self.category_repo.get_by_slug(slug)
+
+    if category:
+        return category
+
+    category = self.category_repo.create(
+        name=product_data.category,
+        slug=slugify(product_data.category)
+    )
+
+    return category

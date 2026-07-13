@@ -36,7 +36,9 @@ services:
   worker:
     build: .
     container_name: kalavofor-worker
-    command: celery -A app.workers.celery_app worker --loglevel=info
+    command: celery -A app.workers.celery_app:celery_app worker --loglevel=info
+    env_file:
+      - .env
     depends_on:
       - redis
       - postgres

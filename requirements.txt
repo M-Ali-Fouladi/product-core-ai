@@ -10,4 +10,5 @@ python-dotenv
 
 celery
 redis
+pydantic-settings
 slugify
